@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton buttonAddNote;
     private NotesAdapter notesAdapter;
 
-    private NoteDatabase noteDatabase;
+    private MainViewModel mainViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +38,9 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        mainViewModel = new MainViewModel(getApplication());
 
-        noteDatabase = NoteDatabase.getInstance(getApplication());
+
         initViews();
 
         notesAdapter = new NotesAdapter();
@@ -50,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         });
         recyclerviewNotes.setAdapter(notesAdapter);
 
-        noteDatabase.notesDao().getNotes().observe(this, new Observer<List<Note>>() {
+        mainViewModel.getNotes().observe(this, new Observer<List<Note>>() {
             @Override
             public void onChanged(List<Note> notes) {
                 notesAdapter.setNotes(notes);
@@ -76,14 +77,7 @@ public class MainActivity extends AppCompatActivity {
                             int direction) {
                         int position = viewHolder.getAdapterPosition();
                         Note note = notesAdapter.getNotes().get(position);
-
-                        Thread thread = new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                noteDatabase.notesDao().remove(note.getId());
-                            }
-                        });
-                        thread.start();
+                        mainViewModel.remove(note);
                     }
                 });
 
