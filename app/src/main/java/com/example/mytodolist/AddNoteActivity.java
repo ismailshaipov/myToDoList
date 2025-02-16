@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 public class AddNoteActivity extends AppCompatActivity {
 
@@ -26,8 +28,8 @@ public class AddNoteActivity extends AppCompatActivity {
     private Button btnSave;
 
 
-    private NoteDatabase noteDatabase;
-    private Handler handler = new Handler(Looper.getMainLooper());
+    private AddNoteViewModel addNoteViewModel;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +41,16 @@ public class AddNoteActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        addNoteViewModel = new ViewModelProvider(this).get(AddNoteViewModel.class);
 
-        noteDatabase = NoteDatabase.getInstance(getApplication());
+        addNoteViewModel.getShouldCloseScreen().observe(this, new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean shouldClose) {
+                if (shouldClose)
+                    finish();
+            }
+        });
+
         initViews();
 
         btnSave.setOnClickListener(new View.OnClickListener() {
@@ -62,27 +72,15 @@ public class AddNoteActivity extends AppCompatActivity {
     private void saveNote() {
         String text = editTextNote.getText().toString().trim();
         int priority = getPriority();
-        Note note = new Note(text,priority);
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                noteDatabase.notesDao().add(note);
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        finish();
-                    }
-                });
-            }
-        });
-        thread.start();
+        Note note = new Note(text, priority);
+        addNoteViewModel.saveNote(note);
     }
 
     private int getPriority() {
         int priority;
         if (radioBtnLow.isChecked()) {
             priority = 0;
-        }else if(radioBtnMedium.isChecked()){
+        } else if (radioBtnMedium.isChecked()) {
             priority = 1;
         } else {
             priority = 2;
@@ -91,7 +89,7 @@ public class AddNoteActivity extends AppCompatActivity {
 
     }
 
-    public static Intent newIntent(Context context){
-        return new Intent(context,AddNoteActivity.class);
+    public static Intent newIntent(Context context) {
+        return new Intent(context, AddNoteActivity.class);
     }
 }
