@@ -33,6 +33,10 @@ android {
 }
 
 dependencies {
+    val room_version = "2.6.1"
+
+    implementation(libs.room.runtime)
+    annotationProcessor("androidx.room:room-compiler:$room_version")
 
     implementation(libs.appcompat)
     implementation(libs.material)
