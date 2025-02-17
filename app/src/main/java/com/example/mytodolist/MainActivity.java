@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        mainViewModel.refreshList();
     }
 
     private void initViews() {
